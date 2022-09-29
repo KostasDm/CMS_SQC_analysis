@@ -1,0 +1,101 @@
+#SQC parameters
+
+
+headers :
+
+  Str: [Pad, Istrip, Rpoly, Cac, Cac_Rp, Idiel, Cint, Cint_Rp, Idark, Rint, Temperature, Humidity]
+  IV : [Voltage, current, capacitance, temperature, humidity]
+   
+
+Strip_Parameters:
+
+   Istrip: 
+     variables: [Pad, Istrip]
+     units_conversion: 1e12
+     units: pA
+     title: Strip Current
+     bad_strip: Leaky Strips
+     2S_threshold: 40000 #pA
+     PSS_threshold: 25000 #pA
+     
+    
+   Rpoly: 
+     variables: [Pad, Rpoly]
+     units_conversion: 1e-6
+     units: MOhm
+     title: Polysilicon Resistance
+     bad_strip: Low Rpoly
+     2S_threshold: 1.5 #Mohm
+     PSS_threshold: 1.5 #Mohm
+     
+   
+   Cac:
+      variables: [Pad, Cac]
+      units_conversion: 1e12      
+      units: pF
+      title: Coupling Capacitance
+      bad_strip: Low CC
+      2S_threshold: 134.0 #pF
+      PSS_threshold: 70.0 #pF
+      
+      
+   Idiel:
+      variables: [Pad, Idiel]
+      units_conversion: 1e12
+      units: pA
+      title: Dielectric Current
+      bad_strip: Pinholes
+      2S_threshold: 10000 #pA
+      PSS_threshold: 10000 #pA
+
+
+   
+   Rint:
+      variables: [Pad, Rint]
+      units_conversion: 1e-9
+      units: \u03A9
+      title: Interstrip Resistance
+      bad_strip: Low Rint
+      2S_threshold: 2.5 #Gohm
+      PSS_threshold: 2.5 #Gohm
+      
+   Cint:
+      variables: [Pad, Cint]
+      units_conversion: 1e12
+      units: pF
+      title: Interstrip Capacitance
+      bad_strip: High Cint    
+      2S_threshold: 2.5 #pF
+      PSS_threshold: 2.5 #pF 
+     
+     
+   Temperature:
+      variables: [Pad, Temperature]
+      units_conversion: 1
+      units: \u00B0C
+      title: Temperature during measurement
+      
+   Humidity:
+      variables: [Pad, Humidity]
+      units_conversion: 1
+      units: $\%$
+      title: Humidity during measurement 
+
+
+
+IVCV_Parameters: 
+     
+   current:
+      variables: [Voltage, current]
+      units_conversion: 1e9
+      units: nA
+      title: I-V curve  
+
+   capacitance:
+      variables: [Voltage, capacitance]
+      units_conversion: 1e0
+      units: F
+      title: Full Depletion Voltage curve    
+           
+
+    
