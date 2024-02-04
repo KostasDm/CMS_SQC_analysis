@@ -10,8 +10,7 @@ from bokeh.io import  output_file, show
 from bokeh.models import LinearAxis, Range1d
 from bokeh.models.renderers import GlyphRenderer
 from pretty_html_table import build_table
-from matplotlib.patches import Patch
-from matplotlib.lines import Line2D
+
 
 hv.extension('bokeh')
 
@@ -19,38 +18,22 @@ hv.extension('bokeh')
 
 def make_dataframe_from_ascii(datafile, skip):
 
-    data = np.genfromtxt(datafile, skip_header=skip, delimiter=",", encoding='latin-1') #max_rows=621
+    data = np.genfromtxt(datafile, skip_header=skip, delimiter=",", encoding='latin-1') 
 
-    df = pd.DataFrame(data, columns= ['Timestamp', 'Voltage', 'Current', 'smu_current [A]', 'pt100', 'cts_temp', 'cts_humi', 'cts_status', 'cts_program', 'hv_status']) #
+    df = pd.DataFrame(data, columns= ['Timestamp', 'Voltage', 'Current', 'smu_current [A]', 'pt100', 'cts_temp', 'cts_humi', 'cts_status', 'cts_program', 'hv_status']) #'smu_current [A]'
 
     return df
 
 
-def scale_current(df):
-   
-   df['cts_temp'] = pd.to_numeric(df['cts_temp'])
-   df_troom= df.loc[df['cts_temp']>19.0]
-   df_cold= df.loc[df['cts_temp']<-28.0]
-   i20 = df_troom['Current'].median()
-   icold = df_cold['Current'].median()
-   print(icold)
-   kb = 8.617*1e-5
-   Eeff = 1.21
-   i_30 = i20/(((293**2)*np.exp((-Eeff/(2*kb*293))))/((243**2)*np.exp((-Eeff/(2*kb*243)))))
-   
-   i_cold_std = df_cold['Current'].std()
-   return icold, i_cold_std, i_30
- 
-   
 
 def plot_Ivstime(df, label, color, style):
     # plot the time evolution of current
 
-    
     df['Current'] = (df['Current'].abs())*1e9
+
  
     df1 = pd.DataFrame({'Time [h]': df['Timestamp'].divide(3600), 'Current [nA]': df['Current'].values})
-    plot = (hv.Curve(df1, label=label)).opts(logy=True,width=900, height = 600, line_width=5, title = 'Current over time', fontsize={'title': 15, 'labels': 17, 'xticks': 15, 'yticks': 15})
+    plot = (hv.Curve(df1, label=label)).opts(width=800, height = 600, line_width=5, title = 'Current over time', fontsize={'title': 15, 'labels': 14, 'xticks': 12, 'yticks': 12})#, ylim=(0, 150)
     
    
     return plot
@@ -74,7 +57,7 @@ def plot_IV(df, label, color):
 def plot_temp_humi(df):
 
     df['Timestamp'] = df['Timestamp'].divide(3600)
-    df_temp = pd.DataFrame({'Time [h]': df.get('Timestamp'), 'Temperature [\u00B0C]': df.get('cts_temp').values})
+    df_temp = pd.DataFrame({'Time [h]': df.get('Timestamp'), 'Temperature [\u00B0C]': df.get('pt100').values})
     df_humi = pd.DataFrame({'Time [h]': df.get('Timestamp'), 'Rel. Humidity [%]': df.get('cts_humi').values})
 
 
@@ -93,7 +76,7 @@ def plot_temp_humi(df):
 
 
     c_def = hv.Curve(df_temp , name='Temperature [\u00B0C]', label = 'Temperature').options(color='red', width=800, height = 600, title = 'Environmental conditions over time', fontsize={'title': 15, 'labels': 14, 'xticks': 12, 'yticks': 12})
-    c_sec = hv.Curve(df_humi, name = 'Rel. Humidity [%]' ).options(color='blue', width=900, height = 600,  fontsize={'labels': 17, 'xticks': 15, 'yticks': 15}) #, hooks=[apply_formatter])
+    c_sec = hv.Curve(df_humi, name = 'Rel. Humidity [%]', label = 'Humidity' ).options(color='blue', width=800, height = 600,  fontsize={'title': 15, 'labels': 14, 'xticks': 12, 'yticks': 12}) #, hooks=[apply_formatter])
     plot = c_def + c_sec #+ c_def*c_sec
 
     return plot
@@ -161,9 +144,8 @@ def create_list_with_plots(files):
     df = pd.DataFrame({})
     df1 = pd.DataFrame({})
     LT_list=[]
-    ind=[]
-    sensors=[]
     fig, ax = plt.subplots()
+    c = ['golden', 'red', 'blue', 'black']
     for f in files:
 
         file = f.split(os.sep)[-1]
@@ -172,10 +154,10 @@ def create_list_with_plots(files):
             os.path.splitext(sensor)[0].split('-')[1:2])
 
         if "it" in f:
-            sensor_plot = '_'.join(sensor.split('_')[0:2])
+            print(f)
             index_it += 1
 
-            df = make_dataframe_from_ascii(f, 9) #185
+            df = make_dataframe_from_ascii(f, 200) #185
             
             relative_deviation, status = find_relative_deviation(df)
             LT_list.append([sensor, round(relative_deviation,2), status])
@@ -183,22 +165,17 @@ def create_list_with_plots(files):
             print('The relative deviation of sensor {} is: {} %'.format(sensor, round(relative_deviation,2)))
             
             plot_it_list.append(plot_Ivstime(df, sensor, colors[index_it], '-'))
-            icold, icold_std, i30 = scale_current(df)
-            legend_elements = [Line2D([0], [0],  marker='*', color='b', label='Theoretical', markersize=8, linestyle='None'),
-                   Line2D([0], [0], marker='o', color='b', label='Experimental', markersize=8)]
-              
-            p = index_it-1               
-            ind.append(p) 
-            sensors.append(sensor_plot)            
-            plt.errorbar(p, icold, yerr=icold_std, fmt='o', markersize=8, color=colors[index_it])
-            plt.errorbar(x=p, y=i30, marker='*', markersize=8, color = colors[index_it])
+            
            
-            plt.ylabel('Bias current@-30\u2103 [nA]', fontsize= 12, fontweight='bold')
-            #plt.xticks(rotation = 30, fontsize=7)
-            ax.legend(handles=legend_elements)
-            plt.grid()
+            df = df.loc[df['cts_temp']<20.5]
+            
+            plt.plot(df['Timestamp'].div(3600), df['Current'].abs(), '-o', color=colors[index_it], label = sensor)
+            plt.xlabel('Time [h]', fontsize=13)#, fontweight = 'bold')
+            plt.ylabel('Current [nA]', fontsize=13)#, fontweight = 'bold')
+            
 
-        elif "IV" in f:
+
+        if "IV" in f:
           
             index_iv += 1
 
@@ -206,13 +183,12 @@ def create_list_with_plots(files):
             plot_iv_list.append(plot_IV(df1, sensor, colors[index_iv]))
     
     
-    
+    plt.legend(loc='best')
+    plt.show()
     dataframe = pd.DataFrame(data = LT_list, columns=['Sensor', 'Leakage Current relative deviation [%]', 'Status'])
     make_table_with_LT_results(dataframe)
     
-    plt.xticks(ind, sensors, rotation = 30, fontsize=7)
-    plt.savefig('cold_run.pdf')
-    plt.show()
+    
     return plot_it_list, plot_iv_list, df, df1
 
 
@@ -255,7 +231,7 @@ def create_bookeh_plots(plot_it_list, plot_iv_list, df, fig_index):
 
       
        humi = plot_temp_humi(df)
-       new_plot2 = hv.Layout( IV_plot+ humi + new_plot).cols(1)
+       new_plot2 = hv.Layout( IV_plot + new_plot + humi ).cols(1) 
        new_plot2.opts(shared_axes=False)
        renderer = hv.renderer('bokeh')
        renderer.save(new_plot2, 'LT_figures')

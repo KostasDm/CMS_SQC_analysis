@@ -4,98 +4,120 @@
 headers :
 
   Str: [Pad, Istrip, Rpoly, Cac, Cac_Rp, Idiel, Cint, Cint_Rp, Idark, Rint, Temperature, Humidity]
-  IV : [Voltage, current, capacitance, temperature, humidity]
+  IVCV : ['Voltage [V]', 'current [A]', 'capacitance [F]', 'temperature [deg]', 'humidity [%]']
+  HPK_IV : ['Voltage [V]',  'current [A]']
+  HPK_CV : ['Voltage [V]',  'capacitance [F]']
+
    
 
 Strip_Parameters:
 
    Istrip: 
-     variables: [Pad, Istrip]
+     variables: [Strip, Istrip]
      units_conversion: 1e12
      units: pA
      title: Strip Current
      bad_strip: Leaky Strips
      2S_threshold: 40000 #pA
      PSS_threshold: 25000 #pA
+     expected_range: [-20000, -10] #pA
      
     
    Rpoly: 
-     variables: [Pad, Rpoly]
+     variables: [Strip, Rpoly]
      units_conversion: 1e-6
-     units: MOhm
+     units: M$\Omega$
      title: Polysilicon Resistance
      bad_strip: Low Rpoly
-     2S_threshold: 1.5 #Mohm
-     PSS_threshold: 1.5 #Mohm
+     2S_threshold: 1.5
+     PSS_threshold: 1.5 
+     expected_range: [1, 2.2] #MOhm
      
    
    Cac:
-      variables: [Pad, Cac]
+      variables: [Strip, Cac]
       units_conversion: 1e12      
       units: pF
       title: Coupling Capacitance
       bad_strip: Low CC
       2S_threshold: 134.0 #pF
       PSS_threshold: 70.0 #pF
+      expected_range: [65, 80] #pF adjusted to PSS
       
       
    Idiel:
-      variables: [Pad, Idiel]
+      variables: [Strip, Idiel]
       units_conversion: 1e12
       units: pA
       title: Dielectric Current
       bad_strip: Pinholes
       2S_threshold: 10000 #pA
       PSS_threshold: 10000 #pA
+      expected_range: [-500, 500] #pA
 
 
-   
+   Idark:
+      variables: [Strip, Idark]
+      units_conversion: 1e9
+      units: nA
+      title: Total Current
+      bad_strip: bad
+      2S_threshold: 7500 #nA
+      PSS_threshold: 3125 #nA
+      expected_range: [-3000, 0] #nA
+  
    Rint:
-      variables: [Pad, Rint]
+      variables: [Strip, Rint]
       units_conversion: 1e-9
-      units: \u03A9
+      units: G$\Omega$
       title: Interstrip Resistance
       bad_strip: Low Rint
-      2S_threshold: 2.5 #Gohm
-      PSS_threshold: 2.5 #Gohm
+      2S_threshold: 4 #Gohm
+      PSS_threshold: 2 #Gohm
+      expected_range: [50, 2000] #GOhm
       
    Cint:
-      variables: [Pad, Cint]
+      variables: [Strip, Cint]
       units_conversion: 1e12
       units: pF
       title: Interstrip Capacitance
       bad_strip: High Cint    
       2S_threshold: 2.5 #pF
       PSS_threshold: 2.5 #pF 
+      expected_range: [0.5, 2.5] #pA
      
      
    Temperature:
-      variables: [Pad, Temperature]
+      variables: [Strip, Temperature]
       units_conversion: 1
-      units: \u00B0C
+      units: $^\circ$C
       title: Temperature during measurement
+      expected_range: [20, 28]
       
    Humidity:
-      variables: [Pad, Humidity]
+      variables: [Strip, Humidity]
       units_conversion: 1
       units: $\%$
       title: Humidity during measurement 
+      expected_range: [0, 11]
 
 
 
 IVCV_Parameters: 
      
-   current:
-      variables: [Voltage, current]
+   IV:
+      variables: [Voltage, Current]
       units_conversion: 1e9
       units: nA
-      title: I-V curve  
+      title: IV curve 
+      expected_range: [0, 20000] #uA      
 
-   capacitance:
-      variables: [Voltage, capacitance]
+   CV:
+      variables: [Voltage, 1/C$^2$]
       units_conversion: 1e0
-      units: F
-      title: Full Depletion Voltage curve    
+      units: F$^{-2}$
+      title: Full Depletion Voltage curve
+      expected_range: [0, 1e18]      
            
 
     
